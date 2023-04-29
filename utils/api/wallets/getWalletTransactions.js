@@ -1,5 +1,5 @@
 const axios = require('axios').default;
-const axiosConfig = require('./../config/axiosConfig')
+const axiosConfig = require('./../../../config/axiosConfig')
 
 
 const getWalletTransactions = (searchingWallet) => {

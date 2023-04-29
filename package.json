@@ -3,6 +3,7 @@
     "axios": "^1.4.0",
     "defi-sdk": "^0.1.0-alpha.58",
     "ethers": "^6.3.0",
+    "googleapis": "^118.0.0",
     "http": "*",
     "node-fetch": "^3.3.1",
     "nodemon": "^2.0.22",

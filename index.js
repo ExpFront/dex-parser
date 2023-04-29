@@ -1,8 +1,13 @@
 const axios = require('axios').default;
 const http = require('http');
-const getWalletTransactions = require('./utils/getWalletTransactions')
-const getWalletsTransactions = require('./utils/getWalletTransactions')
-const handleWalletTransactions = require('./utils/handleWalletTransactions')
+
+const getWalletTransactions = require('./utils/api/wallets/getWalletTransactions')
+const getWalletsTransactions = require('./utils/api/wallets/getWalletTransactions')
+const handleWalletTransactions = require('./utils/api/wallets/handleWalletTransactions')
+
+const calculateWalletStatistics = require('./utils/calculations/calculateWalletStatistics')
+
+const addDataToGoogleSheet = require('./utils/api/google/addDataToGoogleSheet')
 
 
 const server = http.createServer((req, res) => {
@@ -11,31 +16,24 @@ const server = http.createServer((req, res) => {
 });
 
 
-const mapData = (response) => {
-  const mappedArr = [];
-  const { data } = response;
-
-  console.log(data, 'data')
-}
-
-
-
-const getWalletTransactionsTotalInfo = (searchingWallet) => {
-  axios.get(`https://api.zerion.io/v1/wallets/${searchingWallet}/transactions/?currency=usd&filter[operation_types]=trade`, axiosConfig)
-    // .then(response => response.json())
-    // .then(response => console.log(response.data[0].attributes.transfers, 'tut'))
-    .catch(err => console.error(err));
-}
-
-
-
-
 server.listen(3002, 'localhost', async () => {
   console.log(`Server running at http://localhost:3002/`);
 
-  const searchingWallet = '0x5aceb63d52d0d7081a72f254401893ffcf81381a';
-  const walletTransactions = await getWalletTransactions(searchingWallet);
-  handleWalletTransactions(walletTransactions)
+
+
+  const searchingWallet = '0xf731bd55dba8679a9585fa5719f4219762a87347';
+
+  try {
+    const walletTransactions = await getWalletTransactions(searchingWallet);
+    const mappedTransactionsData = handleWalletTransactions(walletTransactions);
+    const walletStatistics = calculateWalletStatistics(mappedTransactionsData); 
+  
+    addDataToGoogleSheet(walletStatistics);
+  } catch {
+    console.error('Error fetching data')
+  }
+
+
 
   // const searchingWallets = ['0xf731bd55dba8679a9585fa5719f4219762a87347', '0x08b5d99e75c7d821da91ce8615c015c73fac312a']
   // getWalletsTransactions(searchingWallets)
@@ -44,21 +42,12 @@ server.listen(3002, 'localhost', async () => {
 
 
 
-
-
-
-
-
-
-
-
-
 // Основная задача обработать массив значений полученных через запрос к zerion.
 // Ниже описан порядок действий.
 
-// Взять данные по транзакциям по необходимым кошелькам -> создать приведенный массив из объектов.
-// Определить какие значения и параметры должны быть в объекте (зависит от того, что мы будем делать далее с ними)
-// Получить массив из приведенных значений. И привести значения к необходимым нам новым значением (посчитать винрейт, общее кол-во сделок, общий профит чувака)
+// ✅ Взять данные по транзакциям по необходимым кошелькам -> создать приведенный массив из объектов.
+// ✅ Определить какие значения и параметры должны быть в объекте (зависит от того, что мы будем делать далее с ними)
+// Получить массив из приведенных значений. И привести значения к необходимым нам новым значением (посчитать винрейт, общее кол-во сделок, общий профит)
 // Вывести в консоль эти данные. 
 // ✅ Следующий шаг. Сделать массив из кошельков, которые мы смотрим. И сделать цикл, в который мы будем передавать уникальный кошелек.
 // Привести значения всех кошельков к 1 общему массиву с данными.
