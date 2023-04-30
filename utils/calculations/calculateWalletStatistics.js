@@ -45,7 +45,7 @@ const calculateWalletStatistics = (data) => {
 
     Object.keys(mappedDataOfTokens).map(token => {
 
-      tokensStatistics[token] = mappedDataOfTokens[token].reduceRight((acc, curr, id) => {
+      tokensStatistics[token] = mappedDataOfTokens[token].reduceRight((acc, curr) => {
 
         if (curr.receivedToken.tokenSymbol === token) {
           const amountInUSD = curr.receivedToken.amountInUSD ? curr.receivedToken.amountInUSD : curr.sentToken.amountInUSD;
