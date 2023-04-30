@@ -23,15 +23,15 @@ server.listen(3002, 'localhost', async () => {
 
   const searchingWallet = '0xf731bd55dba8679a9585fa5719f4219762a87347';
 
-  try {
+  // try {
     const walletTransactions = await getWalletTransactions(searchingWallet);
     const mappedTransactionsData = handleWalletTransactions(walletTransactions);
     const walletStatistics = calculateWalletStatistics(mappedTransactionsData); 
   
-    addDataToGoogleSheet(walletStatistics);
-  } catch {
-    console.error('Error fetching data')
-  }
+    // addDataToGoogleSheet(walletStatistics);
+  // } catch {
+  //   console.error('Error fetching data')
+  // }
 
 
 

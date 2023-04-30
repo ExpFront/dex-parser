@@ -1,117 +1,91 @@
+
+const updateMappedDataOfTokens = (obj, tokenSymbol, transaction) => {
+  Array.isArray(obj[tokenSymbol]) ? obj[tokenSymbol].push(transaction) : obj[tokenSymbol] = [transaction]
+}
+
+
 const calculateWalletStatistics = (data) => {
-    console.log(data, 'data')
-
-    // const newData = data.filter(transaction => data.includes(transaction.))
-
-
-    return {
-      winrate: {
-        // percent: ,
-        // amountOfAllTrades: ,
-        // amountOfProfitTrades: ,
-        // amountOfStillOpenedTrades: 
+    const mappedDataOfTokens = {};
+    const tokensStatistics = {};
+    const initialTokenStatistics = {
+      pnl: 0,
+      wins: 0,
+      losses: 0,
+      openedPositions: {
+        amountInToken: 0,
+        amountInUSD: 0,
+        amountInUsdWithFee: 0,
+        count: 0
       },
-      profit: {
-        // usd: ,
-        // percent:
+      closedPositions: {
+        amountInToken: 0,
+        amountInUSD: 0,
+        amountInUsdWithFee: 0,
+        count: 0
       }
     }
+
+
+
+    data.map(transaction => {
+      const { receivedToken, sentToken } = transaction;
+
+      if (receivedToken.tokenSymbol !== 'ETH') {
+        updateMappedDataOfTokens(mappedDataOfTokens, receivedToken.tokenSymbol, transaction);
+      }
+
+      if (sentToken.tokenSymbol !== 'ETH') {
+        updateMappedDataOfTokens(mappedDataOfTokens, sentToken.tokenSymbol, transaction);
+      }
+
+    })
+
+    
+
+
+    Object.keys(mappedDataOfTokens).map(token => {
+
+      tokensStatistics[token] = mappedDataOfTokens[token].reduceRight((acc, curr, id) => {
+
+        if (curr.receivedToken.tokenSymbol === token) {
+          const amountInUSD = curr.receivedToken.amountInUSD ? curr.receivedToken.amountInUSD : curr.sentToken.amountInUSD;
+
+          return { 
+            ...acc,
+            openedPositions: {
+              amountInToken: acc.openedPositions.amountInToken + curr.receivedToken.amountInToken,
+              amountInUSD: acc.openedPositions.amountInUSD + amountInUSD,
+              amountInUsdWithFee: acc.openedPositions.amountInUsdWithFee + curr.receivedToken.amountInUSD + curr.fee.amountInUSD,
+              count: acc.openedPositions.count + 1 
+            }
+          }
+
+        } else if (curr.sentToken.tokenSymbol === token) {
+          const pnl = curr.sentToken.amountInUSD - curr.fee.amountInUSD - acc.openedPositions.amountInUsdWithFee;
+          const wins = pnl > 0 ? acc.wins + 1 : acc.wins;
+          const losses = pnl < 0 ? acc.losses + 1 : acc.losses;
+
+
+          return { 
+            ...acc,
+            pnl,
+            wins,
+            losses,
+            closedPositions: {
+              amountInToken: acc.closedPositions.amountInToken + curr.sentToken.amountInToken,
+              amountInUSD: acc.closedPositions.amountInUSD + curr.sentToken.amountInUSD,
+              amountInUsdWithFee: acc.closedPositions.amountInUsdWithFee + curr.sentToken.amountInUSD + curr.fee.amountInUSD,
+              count: acc.closedPositions.count + 1 
+            },
+            
+          };
+        }
+      }, initialTokenStatistics)
+    })
+
+    console.log(tokensStatistics)
+
+    return tokensStatistics;
 }
 
 module.exports = calculateWalletStatistics;
-
-
-
-// {
-  //   winrate: calculateWinrate(mappedTransactionsData), // percent, amountOfAllTrades
-  //   // profit: calculateProfit(mappedTransactionsData) // usd: , percent: .
-  // }
-
-// [4, 6, 8, 12].any(isPrime)
-
-// [
-//     {
-//       transactionTime: '2023-04-28T12:02:35Z',
-//       fee: {
-//         tokenSymbol: 'ETH',
-//         tokenPriceThatTime: 1904.1799999999998,
-//         amountInToken: 0.0065258835628798,
-//         amountInUSD: 12.426456962764457
-//       },
-//       receivedToken: {
-//         tokenSymbol: 'KEKW',
-//         tokenPriceThatTime: null,
-//         amountInToken: 609475034581.738,
-//         amountInUSD: null
-//       },
-//       sentToken: {
-//         tokenSymbol: 'ETH',
-//         tokenPriceThatTime: 1904.1799999999998,
-//         amountInToken: 0.02,
-//         amountInUSD: 38.0836
-//       }
-//     },
-//     {
-//       transactionTime: '2023-04-27T23:39:47Z',
-//       fee: {
-//         tokenSymbol: 'ETH',
-//         tokenPriceThatTime: 1910.2599999999998,
-//         amountInToken: 0.0060408110255368,
-//         amountInUSD: 11.539519669641926
-//       },
-//       receivedToken: {
-//         tokenSymbol: 'ETH',
-//         tokenPriceThatTime: 1910.2599999999998,
-//         amountInToken: 0.0251811527419836,
-//         amountInUSD: 48.10254883690159
-//       },
-//       sentToken: {
-//         tokenSymbol: 'JEET',
-//         tokenPriceThatTime: 1.1212458046959014e-9,
-//         amountInToken: 42958734362.301956,
-//         amountInUSD: 48.167300678776726
-//       }
-//     },
-//     {
-//       transactionTime: '2023-04-27T23:34:11Z',
-//       fee: {
-//         tokenSymbol: 'ETH',
-//         tokenPriceThatTime: 1910.94,
-//         amountInToken: 0.0049309915058837,
-//         amountInUSD: 9.422828908253399
-//       },
-//       receivedToken: {
-//         tokenSymbol: 'JEET',
-//         tokenPriceThatTime: 1.1253677993402678e-9,
-//         amountInToken: 42958734362.301956,
-//         amountInUSD: 48.344376351746895
-//       },
-//       sentToken: {
-//         tokenSymbol: 'ETH',
-//         tokenPriceThatTime: 1910.94,
-//         amountInToken: 0.0253326699021024,
-//         amountInUSD: 48.40921222272356
-//       }
-//     },
-//     {
-//       transactionTime: '2023-04-25T18:33:23Z',
-//       fee: {
-//         tokenSymbol: 'ETH',
-//         tokenPriceThatTime: 1842.9099999999999,
-//         amountInToken: 0.0060273300978976,
-//         amountInUSD: 11.107826910716465
-//       },
-//       receivedToken: {
-//         tokenSymbol: 'FEFE',
-//         tokenPriceThatTime: 5.268025300310664e-9,
-//         amountInToken: 4349709265.917263,
-//         amountInUSD: 22.914378461847864
-//       },
-//       sentToken: {
-//         tokenSymbol: 'ETH',
-//         tokenPriceThatTime: 1842.9099999999999,
-//         amountInToken: 0.01271568060218,
-//         amountInUSD: 23.43385493856354
-//       }
-//     }
-//   ]
