@@ -79,7 +79,7 @@ const calculateWalletStatistics = (data) => {
 
         return { 
           ...acc,
-
+          token,
           openedPositions: {
             amountInToken: openedPositions.amountInToken + receivedToken.amountInToken,
             amountInUSD: openedPositions.amountInUSD + amountInUSD,
@@ -102,6 +102,7 @@ const calculateWalletStatistics = (data) => {
         return { 
           ...acc,
 
+          token,
           pnl,
           wins,
           losses,
@@ -128,26 +129,23 @@ const calculateWalletStatistics = (data) => {
 
 
   
-
-
-
-  const walletStatistics = Object.keys(detailedTokensStatistics).reduce((acc, curr) => {
+  const walletStatistics = detailedTokensStatistics.reduce((acc, curr) => {
 
     return {
       ...acc,
 
-      pnl:  acc.pnl + detailedTokensStatistics[curr].pnl,
-      wins: acc.wins + detailedTokensStatistics[curr].wins,
-      losses: acc.losses + detailedTokensStatistics[curr].losses,
+      pnl:  acc.pnl + curr.pnl,
+      wins: acc.wins + curr.wins,
+      losses: acc.losses + curr.losses,
 
       openedPositions: {
         ...acc.openedPositions,
-        count: acc.openedPositions.count + detailedTokensStatistics[curr].openedPositions.count
+        count: acc.openedPositions.count + curr.openedPositions.count
       },
 
       closedPositions: {
         ...acc.closedPositions,
-        count: acc.closedPositions.count + detailedTokensStatistics[curr].closedPositions.count
+        count: acc.closedPositions.count + curr.closedPositions.count
       },
 
       remainingPositions: {
@@ -177,4 +175,5 @@ const calculateWalletStatistics = (data) => {
 }
 
 
+// TODO: Нужно переделать рассчет remainingPositions (брать текущий прайс токена) + рефакторинг
 module.exports = calculateWalletStatistics;

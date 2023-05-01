@@ -10,6 +10,7 @@ const handleWalletTransactions = ( { data: { data } }) => {
 
             const mappedTransactionData = {
                 transactionTime: mined_at,
+                tokenHash: transfers[0].fungible_info.implementations[0].address,
 
                 fee: {
                     tokenSymbol: fee.fungible_info.symbol,

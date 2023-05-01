@@ -5,6 +5,8 @@ const getWalletTransactions = require('./utils/api/wallets/getWalletTransactions
 const getWalletsTransactions = require('./utils/api/wallets/getWalletTransactions')
 const handleWalletTransactions = require('./utils/api/wallets/handleWalletTransactions')
 
+const getTokensPrice = require('./utils/api/token/getTokenPrice')
+
 const calculateWalletStatistics = require('./utils/calculations/calculateWalletStatistics')
 
 const addDataToGoogleSheet = require('./utils/api/google/addDataToGoogleSheet')
@@ -19,20 +21,19 @@ const server = http.createServer((req, res) => {
 server.listen(3002, 'localhost', async () => {
   console.log(`Server running at http://localhost:3002/`);
 
-
-
   const searchingWallet = '0xf731bd55dba8679a9585fa5719f4219762a87347';
 
-  // try {
+  try {
     const walletTransactions = await getWalletTransactions(searchingWallet);
     const mappedTransactionsData = handleWalletTransactions(walletTransactions);
-    const walletStatistics = calculateWalletStatistics(mappedTransactionsData); 
-  
-    console.log(searchingWallet, walletStatistics)
-    addDataToGoogleSheet(searchingWallet, walletStatistics);
-  // } catch {
-  //   console.error('Error fetching data')
-  // }
+    const walletStatistics = calculateWalletStatistics(mappedTransactionsData);
+
+    // getTokensPrice('0x76c73e630b61551067ab78c6f5909b5ed74edb8a')
+
+    // addDataToGoogleSheet(searchingWallet, walletStatistics);
+  } catch {
+    console.error('Error fetching data')
+  }
 
 
   // const searchingWallets = ['0xf731bd55dba8679a9585fa5719f4219762a87347', '0x08b5d99e75c7d821da91ce8615c015c73fac312a']
