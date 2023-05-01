@@ -35,7 +35,6 @@ const handleWalletTransactions = ( { data: { data } }) => {
             }
 
             mappedTransactionsData.push(mappedTransactionData)
-
         }
 
     })
