@@ -23,16 +23,16 @@ server.listen(3002, 'localhost', async () => {
 
   const searchingWallet = '0xf731bd55dba8679a9585fa5719f4219762a87347';
 
-  try {
+  // try {
     const walletTransactions = await getWalletTransactions(searchingWallet);
     const mappedTransactionsData = handleWalletTransactions(walletTransactions);
     const walletStatistics = calculateWalletStatistics(mappedTransactionsData); 
   
-    console.log(walletStatistics)
-    // addDataToGoogleSheet(walletStatistics);
-  } catch {
-    console.error('Error fetching data')
-  }
+    console.log(searchingWallet, walletStatistics)
+    addDataToGoogleSheet(searchingWallet, walletStatistics);
+  // } catch {
+  //   console.error('Error fetching data')
+  // }
 
 
   // const searchingWallets = ['0xf731bd55dba8679a9585fa5719f4219762a87347', '0x08b5d99e75c7d821da91ce8615c015c73fac312a']
