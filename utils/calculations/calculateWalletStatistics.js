@@ -25,8 +25,8 @@ const calculateWalletStatistics = (data) => {
     },
     remainingPositions: {
       amountInToken: 0,
-      amountInUSD: 0,
-      amountInUSDWithFee: 0
+      // amountInUSD: 0,
+      // amountInUSDWithFee: 0
     }
   }
 
@@ -42,8 +42,9 @@ const calculateWalletStatistics = (data) => {
       count: 0,
     },
     remainingPositions: {
-      amountInUSD: 0,
+      chunks: [],
     }
+      // amountInUSD: 0,
   }
 
 
@@ -70,14 +71,14 @@ const calculateWalletStatistics = (data) => {
 
     return mappedDataOfTokens[token].reduceRight((acc, curr) => {
 
-      const { receivedToken, sentToken, fee } = curr;
+      const { tokenHash, receivedToken, sentToken, fee } = curr;
       const { openedPositions, closedPositions, remainingPositions } = acc;
 
 
       if (receivedToken.tokenSymbol === token) {
         const amountInUSD = receivedToken.amountInUSD ? receivedToken.amountInUSD : sentToken.amountInUSD;
 
-        return { 
+        return {
           ...acc,
           token,
           openedPositions: {
@@ -88,9 +89,11 @@ const calculateWalletStatistics = (data) => {
           },
 
           remainingPositions: {
+            ...remainingPositions,
+            tokenHash,
             amountInToken: remainingPositions.amountInToken + receivedToken.amountInToken,
-            amountInUSD: remainingPositions.amountInUSD + amountInUSD,
-            amountInUSDWithFee: remainingPositions.amountInUSDWithFee + amountInUSD - 12
+            // amountInUSD: remainingPositions.amountInUSD + amountInUSD,
+            // amountInUSDWithFee: remainingPositions.amountInUSDWithFee + amountInUSD - 12
           }
         }
 
@@ -115,9 +118,10 @@ const calculateWalletStatistics = (data) => {
           },
 
           remainingPositions: {
+            ...remainingPositions,
             amountInToken: remainingPositions.amountInToken - sentToken.amountInToken,
-            amountInUSD: remainingPositions.amountInUSD - sentToken.amountInUSD,
-            amountInUSDWithFee: remainingPositions.amountInUSDWithFee - sentToken.amountInUSD
+            // amountInUSD: remainingPositions.amountInUSD - sentToken.amountInUSD,
+            // amountInUSDWithFee: remainingPositions.amountInUSDWithFee - sentToken.amountInUSD
           }
         };
 
@@ -128,9 +132,10 @@ const calculateWalletStatistics = (data) => {
   })
 
 
+  // console.log(detailedTokensStatistics, 'detailedTokensStatistics')
   
   const walletStatistics = detailedTokensStatistics.reduce((acc, curr) => {
-
+    // console.log(curr, 'curr')
     return {
       ...acc,
 
@@ -150,25 +155,31 @@ const calculateWalletStatistics = (data) => {
 
       remainingPositions: {
         ...acc.remainingPositions,
-        amountInUSD: acc.remainingPositions.amountInUSD + 1
+
+        chunks: [
+          ...acc.remainingPositions.chunks,
+          {
+            tokenHash: curr.remainingPositions.tokenHash,
+            tokenSymbol: curr.token,
+            amountInToken: curr.remainingPositions.amountInToken
+          }
+        ]
       }
     }
 
   }, initialWalletStatistics)
 
-
+  // console.log(walletStatistics.remainingPositions)
 
   return {
     ...walletStatistics,
     winrate: {
       amount: `${walletStatistics.wins} / ${(walletStatistics.wins + walletStatistics.losses)}`,
-      percent: walletStatistics.wins / (walletStatistics.wins + walletStatistics.losses),
+      percent: walletStatistics.wins / (walletStatistics.wins + walletStatistics.losses) * 100,
     },
     remainingPositions: {
       ...walletStatistics.remainingPositions,
       count: walletStatistics.openedPositions.count - walletStatistics.closedPositions.count,
-      amountInUSDWithFee: walletStatistics.remainingPositions.amountInUSD - (walletStatistics.openedPositions.count - walletStatistics.closedPositions.count) * 12
-
     },
 
   }

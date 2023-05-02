@@ -23,17 +23,31 @@ server.listen(3002, 'localhost', async () => {
 
   const searchingWallet = '0xf731bd55dba8679a9585fa5719f4219762a87347';
 
-  try {
+  // try {
     const walletTransactions = await getWalletTransactions(searchingWallet);
     const mappedTransactionsData = handleWalletTransactions(walletTransactions);
     const walletStatistics = calculateWalletStatistics(mappedTransactionsData);
+    const actualRemainingTokenPrices = await getTokensPrice(walletStatistics.remainingPositions.chunks)
 
-    // getTokensPrice('0x76c73e630b61551067ab78c6f5909b5ed74edb8a')
 
-    // addDataToGoogleSheet(searchingWallet, walletStatistics);
-  } catch {
-    console.error('Error fetching data')
-  }
+    const walletStatisticsWithRemainingTokens = {
+      ...walletStatistics,
+      remainingUSD: walletStatistics.remainingPositions.chunks.reduce((acc, curr) => {
+        if (curr.amountInToken > 0) {
+          return acc + actualRemainingTokenPrices[curr.tokenSymbol] * curr.amountInToken
+        }
+
+        return acc;
+      }, 0)
+    };
+
+
+
+
+    addDataToGoogleSheet(searchingWallet, walletStatisticsWithRemainingTokens);
+  // } catch (err) {
+  //   console.error(`Error fetching data: ${err}`)
+  // }
 
 
   // const searchingWallets = ['0xf731bd55dba8679a9585fa5719f4219762a87347', '0x08b5d99e75c7d821da91ce8615c015c73fac312a']
