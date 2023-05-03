@@ -1,14 +1,14 @@
-const handleWalletTransactions = ( { data: { data } }) => {
-    const mappedTransactionsData = [];
+const excludedTokens = ['ETH', 'USDC', 'USDT', 'BNB']
 
-    data.map(( transaction, id ) => {
-        const { attributes } = transaction;
+const handleWalletTransactions = ( { data: { data } }) => {
+    return data.reduce(( acc, curr ) => {
+        const { attributes } = curr;
         const { mined_at, operation_type, status, fee, transfers } = attributes;
 
-
         if (operation_type === "trade" && status === 'confirmed') {
+            const tokenName = excludedTokens.includes(transfers[0].fungible_info.symbol) ? transfers[1].fungible_info.symbol : transfers[0].fungible_info.symbol;
 
-            const mappedTransactionData = {
+            const newData = {
                 transactionTime: mined_at,
                 tokenHash: transfers[0].fungible_info.implementations[0].address,
 
@@ -32,15 +32,13 @@ const handleWalletTransactions = ( { data: { data } }) => {
                     amountInToken: transfers[1].quantity.float,
                     amountInUSD: transfers[1].value
                 }
-
             }
 
-            mappedTransactionsData.push(mappedTransactionData)
+            acc[tokenName] = Array.isArray(acc[tokenName]) ? [ ...acc[tokenName], newData ]: [ newData ];
         }
 
-    })
-
-    return mappedTransactionsData;
+        return acc;
+    }, {})
 }
 
 module.exports = handleWalletTransactions;

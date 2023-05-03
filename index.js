@@ -5,9 +5,7 @@ const getWalletTransactions = require('./utils/api/wallets/getWalletTransactions
 const getWalletsTransactions = require('./utils/api/wallets/getWalletTransactions')
 const handleWalletTransactions = require('./utils/api/wallets/handleWalletTransactions')
 
-const getTokensPrice = require('./utils/api/token/getTokenPrice')
-
-const calculateWalletStatistics = require('./utils/calculations/calculateWalletStatistics')
+const calculateWalletStatistics = require('./utils/calculations/walletStatistics/calculateWalletStatistics')
 
 const addDataToGoogleSheet = require('./utils/api/google/addDataToGoogleSheet')
 
@@ -23,31 +21,15 @@ server.listen(3002, 'localhost', async () => {
 
   const searchingWallet = '0xf731bd55dba8679a9585fa5719f4219762a87347';
 
-  // try {
+  try {
     const walletTransactions = await getWalletTransactions(searchingWallet);
     const mappedTransactionsData = handleWalletTransactions(walletTransactions);
-    const walletStatistics = calculateWalletStatistics(mappedTransactionsData);
-    const actualRemainingTokenPrices = await getTokensPrice(walletStatistics.remainingPositions.chunks)
+    const walletStatistics = await calculateWalletStatistics(mappedTransactionsData);
 
-
-    const walletStatisticsWithRemainingTokens = {
-      ...walletStatistics,
-      remainingUSD: walletStatistics.remainingPositions.chunks.reduce((acc, curr) => {
-        if (curr.amountInToken > 0) {
-          return acc + actualRemainingTokenPrices[curr.tokenSymbol] * curr.amountInToken
-        }
-
-        return acc;
-      }, 0)
-    };
-
-
-
-
-    addDataToGoogleSheet(searchingWallet, walletStatisticsWithRemainingTokens);
-  // } catch (err) {
-  //   console.error(`Error fetching data: ${err}`)
-  // }
+    addDataToGoogleSheet(searchingWallet, walletStatistics);
+  } catch (err) {
+    console.error(`Error fetching data: ${err}`)
+  }
 
 
   // const searchingWallets = ['0xf731bd55dba8679a9585fa5719f4219762a87347', '0x08b5d99e75c7d821da91ce8615c015c73fac312a']
