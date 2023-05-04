@@ -5,7 +5,6 @@ const calculateRemainingPositionsInUSD = require('./utils/calculateRemainingPosi
 // Скрипт подсчитывает общую статистику по кошельку
 const calculateWalletStatistics = async (data) => {
   const detailedTokensStatistics = getDetailedTokensStatistics(data);
-  
   const initialWalletStatistics = {
     pnl: 0,
     wins: 0,
@@ -15,6 +14,7 @@ const calculateWalletStatistics = async (data) => {
     },
     closedPositions: {
       count: 0,
+      countOfPartiallyClosedPositions: 0,
     },
     remainingPositions: {
       chunks: [],
@@ -35,7 +35,8 @@ const calculateWalletStatistics = async (data) => {
       },
 
       closedPositions: {
-        count: acc.closedPositions.count + curr.closedPositions.count
+        count: acc.closedPositions.count + curr.closedPositions.count,
+        countOfPartiallyClosedPositions: acc.closedPositions.countOfPartiallyClosedPositions + curr.closedPositions.countOfPartiallyClosedPositions,
       },
     }
 
@@ -46,7 +47,8 @@ const calculateWalletStatistics = async (data) => {
           {
             tokenHash: curr.remainingPositions.tokenHash,
             tokenSymbol: curr.token,
-            amountInToken: curr.remainingPositions.amountInToken
+            amountInToken: curr.remainingPositions.amountInToken,
+            tokenPriceThatTime: curr.remainingPositions.tokenPriceThatTime // in USD
           }
         ]
       }
@@ -58,14 +60,45 @@ const calculateWalletStatistics = async (data) => {
 
 
 
+
+
+  const { amountInUSDWithFee, outOfLiquidityHashes } = await calculateRemainingPositionsInUSD(walletStatistics.remainingPositions.chunks);
+
+  const calcLossOnOutOfLiquidityHashes = (hashes) => {
+    return hashes.reduce((acc, curr) => {
+      const data = walletStatistics.remainingPositions.chunks.find(element => element.tokenHash === curr);
+
+      return acc + data.amountInToken * data.tokenPriceThatTime
+    }, 0)
+  }
+
+
+  const { additionalLossesCount, additionalLoss, additionalClosedPositionsCount } = {
+    additionalLossesCount: outOfLiquidityHashes.length,
+    additionalLoss: calcLossOnOutOfLiquidityHashes(outOfLiquidityHashes),
+    additionalClosedPositionsCount: outOfLiquidityHashes.length,
+  }
+
+
+
+
   const additionalInfo = {
-    winrate: {
-      amount: `${walletStatistics.wins} / ${(walletStatistics.wins + walletStatistics.losses)}`,
-      percent: walletStatistics.wins / (walletStatistics.wins + walletStatistics.losses) * 100,
+    pnl: walletStatistics.pnl - additionalLoss,
+    losses: walletStatistics.losses + additionalLossesCount,
+
+    closedPositions: {
+      ...walletStatistics.closedPositions,
+      count: walletStatistics.closedPositions.count + additionalClosedPositionsCount
     },
+
+    winrate: {
+      amount: `${walletStatistics.wins} / ${(walletStatistics.wins + walletStatistics.losses + outOfLiquidityHashes.length)}`,
+      percent: walletStatistics.wins / (walletStatistics.wins + walletStatistics.losses + outOfLiquidityHashes.length) * 100,
+    },
+
     remainingPositions: {
       ...walletStatistics.remainingPositions,
-      amountInUSDWithFee: await calculateRemainingPositionsInUSD(walletStatistics.remainingPositions.chunks),
+      amountInUSDWithFee,
       count: walletStatistics.openedPositions.count - walletStatistics.closedPositions.count,
     },
   }

@@ -26,6 +26,7 @@ server.listen(3002, 'localhost', async () => {
     const mappedTransactionsData = handleWalletTransactions(walletTransactions);
     const walletStatistics = await calculateWalletStatistics(mappedTransactionsData);
 
+    console.log(walletStatistics)
     addDataToGoogleSheet(searchingWallet, walletStatistics);
   } catch (err) {
     console.error(`Error fetching data: ${err}`)
