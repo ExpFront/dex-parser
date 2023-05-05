@@ -43,7 +43,7 @@ const addDataToGoogleSheet = async ( walletID, { pnl, winrate: { amount, percent
         },
     })
     .then(response => console.log('Data was added to Google Sheet'))
-    .catch(err => console.log('Error adding data to Google Sheet'));
+    .catch(err => console.error('Error adding data to Google Sheet'));
 }
 
 module.exports = addDataToGoogleSheet;

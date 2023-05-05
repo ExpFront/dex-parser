@@ -1,5 +1,5 @@
-const getDetailedTokensStatistics = require('./utils/getDetailedTokensStatistics')
-const calculateRemainingPositionsInUSD = require('./utils/calculateRemainingPositionsInUSD')
+const getDetailedTokensStatistics = require('./utils/getDetailedTokensStatistics');
+const getAdditionalInfo = require('./utils/getAdditionalInfo');
 
 
 // Скрипт подсчитывает общую статистику по кошельку
@@ -61,48 +61,7 @@ const calculateWalletStatistics = async (data) => {
 
 
 
-
-  const { amountInUSDWithFee, outOfLiquidityHashes } = await calculateRemainingPositionsInUSD(walletStatistics.remainingPositions.chunks);
-
-  const calcLossOnOutOfLiquidityHashes = (hashes) => {
-    return hashes.reduce((acc, curr) => {
-      const data = walletStatistics.remainingPositions.chunks.find(element => element.tokenHash === curr);
-
-      return acc + data.amountInToken * data.tokenPriceThatTime
-    }, 0)
-  }
-
-
-  const { additionalLossesCount, additionalLoss, additionalClosedPositionsCount } = {
-    additionalLossesCount: outOfLiquidityHashes.length,
-    additionalLoss: calcLossOnOutOfLiquidityHashes(outOfLiquidityHashes),
-    additionalClosedPositionsCount: outOfLiquidityHashes.length,
-  }
-
-
-
-
-  const additionalInfo = {
-    pnl: walletStatistics.pnl - additionalLoss,
-    losses: walletStatistics.losses + additionalLossesCount,
-
-    closedPositions: {
-      ...walletStatistics.closedPositions,
-      count: walletStatistics.closedPositions.count + additionalClosedPositionsCount
-    },
-
-    winrate: {
-      amount: `${walletStatistics.wins} / ${(walletStatistics.wins + walletStatistics.losses + outOfLiquidityHashes.length)}`,
-      percent: walletStatistics.wins / (walletStatistics.wins + walletStatistics.losses + outOfLiquidityHashes.length) * 100,
-    },
-
-    remainingPositions: {
-      ...walletStatistics.remainingPositions,
-      amountInUSDWithFee,
-      count: walletStatistics.openedPositions.count - walletStatistics.closedPositions.count,
-    },
-  }
-
+  const additionalInfo = await getAdditionalInfo(walletStatistics);
 
   return {
     ...walletStatistics,
