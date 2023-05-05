@@ -1,7 +1,4 @@
 const initialDetailedTokenStatistics = {
-    pnl: 0,
-    wins: 0,
-    losses: 0,
     openedPositions: {
       amountInToken: 0,
       amountInUSD: 0,
@@ -50,28 +47,20 @@ const getDetailedTokensStatistics = (data) => {
                     remainingPositions: {
                         ...remainingPositions,
                         tokenHash,
-                        tokenPriceThatTime: (openedPositions.amountInUSDWithFee + amountInUSD + fee.amountInUSD) / (openedPositions.amountInToken + receivedToken.amountInToken),
                         amountInToken: remainingPositions.amountInToken + receivedToken.amountInToken,
                     }
                 }
 
             } else if (sentToken.tokenSymbol === token) {
-                const pnl = sentToken.amountInUSD - fee.amountInUSD - openedPositions.amountInUSDWithFee;
-                const wins = pnl > 0 && remainingPositions.amountInToken - sentToken.amountInToken === 0 ? acc.wins + 1 : acc.wins;
-                const losses = pnl < 0 && remainingPositions.amountInToken - sentToken.amountInToken === 0 ? acc.losses + 1 : acc.losses;
-
                 return { 
                     ...acc,
 
                     token,
-                    pnl,
-                    wins,
-                    losses,
 
                     closedPositions: {
                         amountInToken: closedPositions.amountInToken + sentToken.amountInToken,
                         amountInUSD: closedPositions.amountInUSD + sentToken.amountInUSD,
-                        amountInUSDWithFee: closedPositions.amountInUSDWithFee + sentToken.amountInUSD + fee.amountInUSD,
+                        amountInUSDWithFee: closedPositions.amountInUSDWithFee + sentToken.amountInUSD - fee.amountInUSD,
                         count: remainingPositions.amountInToken - sentToken.amountInToken === 0 ? closedPositions.count + 1 : closedPositions.count,
                         countOfPartiallyClosedPositions: remainingPositions.amountInToken - sentToken.amountInToken === 0 ? closedPositions.countOfPartiallyClosedPositions : closedPositions.countOfPartiallyClosedPositions + 1,
                     },
@@ -89,3 +78,31 @@ const getDetailedTokensStatistics = (data) => {
 }
 
 module.exports = getDetailedTokensStatistics;
+
+
+
+
+
+// Возвращает массив из объектов такого вида:
+//   [{
+//     openedPositions: {
+//       amountInToken: 4349709265.917263,
+//       amountInUSD: 22.914378461847864,
+//       amountInUSDWithFee: 34.02220537256433,
+//       count: 1
+//     },
+//     closedPositions: {
+//       amountInToken: 0,
+//       amountInUSD: 0,
+//       amountInUSDWithFee: 0,
+//       count: 0,
+//       countOfPartiallyClosedPositions: 0
+//     },
+//     remainingPositions: {
+//       amountInToken: 4349709265.917263,
+//       tokenHash: '0x76c73e630b61551067ab78c6f5909b5ed74edb8a',
+//       tokenPriceThatTime: 7.821719405283e-9
+//     },
+//     token: 'FEFE'
+//   }
+// ]
