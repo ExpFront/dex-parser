@@ -18,7 +18,7 @@ const calculateTokensStatistics = async (tokens) => {
 
         }
 
-
+        // Если закрывал частично позицию.
         if (token.closedPositions.amountInUSDWithFee > 0) {
             token.pnl = token.closedPositions.amountInUSDWithFee - token.openedPositions.amountInUSDWithFee;
             token.unrealizedPnl = token.pnl > 0 ? token.pnl : token.pnl - token.openedPositions.amountInUSDWithFee * (1 - token.closedPositions.amountInToken / token.openedPositions.amountInToken);

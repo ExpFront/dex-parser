@@ -20,7 +20,7 @@ server.listen(3002, 'localhost', async () => {
   console.log(`Server running at http://localhost:3002/`);
 
   // 0x0270b12dc4a6f5e63d0b2b0c5991c7fb8c1c594d
-  const searchingWallet = '0xf731bd55dba8679a9585fa5719f4219762a87347';
+  const searchingWallet = '0xaf2358e98683265cbd3a48509123d390ddf54534';
 
   // try {
     const walletTransactions = await getWalletTransactions(searchingWallet);
@@ -28,7 +28,7 @@ server.listen(3002, 'localhost', async () => {
     const walletStatistics = await calculateWalletStatistics(mappedTransactionsData);
 
     console.log(walletStatistics)
-    addDataToGoogleSheet(searchingWallet, walletStatistics);
+    // addDataToGoogleSheet(searchingWallet, walletStatistics);
   // } catch (err) {
   //   console.error(`Error compiling script: ${err}`)
   // }
