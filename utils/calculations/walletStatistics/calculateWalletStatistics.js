@@ -59,7 +59,8 @@ const calculateWalletStatistics = async (data) => {
     winrate: {
       amount: `${walletStatistics.wins} / ${(walletStatistics.wins + walletStatistics.losses)}`,
       percent: walletStatistics.wins / (walletStatistics.wins + walletStatistics.losses) * 100
-    }
+    },
+    details: tokensStatistics
   }
 
 }
