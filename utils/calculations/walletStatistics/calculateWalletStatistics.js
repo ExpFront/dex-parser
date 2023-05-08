@@ -1,5 +1,6 @@
 const getDetailedTokensStatistics = require('./utils/getDetailedTokensStatistics');
 const calculateTokensStatistics = require('./utils/calculateTokensStatistics');
+const excludedTokens = require('./../../../config/excludedTokens')
 
 const initialWalletStatistics = {
   openedPositions: {
@@ -27,8 +28,10 @@ const calculateWalletStatistics = async (data) => {
   const detailedTokensStatistics = getDetailedTokensStatistics(data);
   const tokensStatistics = await calculateTokensStatistics(detailedTokensStatistics);
 
-  // console.log(detailedTokensStatistics, 'detailedTokensStatistics')
   const walletStatistics = tokensStatistics.reduce((acc, curr) => {
+
+    if (excludedTokens.includes(curr.token)) return acc;
+
     return {
       ...acc,
 
@@ -55,12 +58,20 @@ const calculateWalletStatistics = async (data) => {
 
 
   return {
+    details: tokensStatistics,
+
     ...walletStatistics,
+
     winrate: {
       amount: `${walletStatistics.wins} / ${(walletStatistics.wins + walletStatistics.losses)}`,
       percent: walletStatistics.wins / (walletStatistics.wins + walletStatistics.losses) * 100
     },
-    // details: tokensStatistics
+
+    unrealizedWinrate: {
+      amount: `${walletStatistics.unrealizedWins} / ${(walletStatistics.unrealizedWins + walletStatistics.unrealizedLosses)}`,
+      percent: walletStatistics.unrealizedWins / (walletStatistics.unrealizedWins + walletStatistics.unrealizedLosses) * 100
+    },
+
   }
 
 }

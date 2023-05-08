@@ -1,4 +1,4 @@
-const excludedTokens = ['ETH', 'USDC', 'USDT', 'BNB']
+const excludedTokens = require('./../../../config/excludedTokens')
 
 const handleWalletTransactions = ({ data }) => {
     return data.reduce(( acc, curr ) => {
@@ -7,6 +7,17 @@ const handleWalletTransactions = ({ data }) => {
 
         if (operation_type === "trade" && status === 'confirmed') {
             const tokenName = excludedTokens.includes(transfers[0].fungible_info.symbol) ? transfers[1].fungible_info.symbol : transfers[0].fungible_info.symbol;
+
+            const { sentTokenAmountInToken, receivedTokenAmountInToken } = transfers.reduce((acc, curr, id) => {
+                return {
+                    sentTokenAmountInToken: id === 0 ? acc.sentTokenAmountInToken : acc.sentTokenAmountInToken + curr.quantity.float,
+                    receivedTokenAmountInToken: id === transfers.length - 1 ? acc.receivedTokenAmountInToken : acc.receivedTokenAmountInToken + curr.quantity.float
+                }
+            }, {
+                sentTokenAmountInToken: 0,
+                receivedTokenAmountInToken: 0
+            });
+
 
             const newData = {
                 transactionTime: mined_at,
@@ -22,18 +33,18 @@ const handleWalletTransactions = ({ data }) => {
                 receivedToken: {
                     tokenSymbol: transfers[0].fungible_info.symbol,
                     tokenPriceThatTime: transfers[0].price,
-                    amountInToken: transfers[0].quantity.float,
-                    // amountInUSD: transfers[2] ? transfers[2].value : transfers[1].value
-                    amountInUSD: transfers[1].fungible_info.symbol === 'USDT' ? transfers[2] ? transfers[2].quantity.float + transfers[1].quantity.float : transfers[1].quantity.float : transfers[0].value
+                    // amountInToken: transfers[0].quantity.float,
+                    amountInToken: receivedTokenAmountInToken,
+                    amountInUSD: transfers.length > 2 ? transfers[transfers.length - 1].value : transfers[1].value // не уверен что так
                 },
 
                 sentToken: {
                     tokenSymbol: transfers[1].fungible_info.symbol,
                     tokenPriceThatTime: transfers[1].price,
-                    // amountInToken: transfers[2] ? transfers[1].quantity.float : transfers[1].quantity.float,
-                    amountInToken: transfers[2] ? transfers[2].quantity.float + transfers[1].quantity.float : transfers[1].quantity.float,
-                    // amountInUSD: transfers[0].value
-                    amountInUSD: transfers[0].fungible_info.symbol === 'USDT' ? transfers[0].quantity.float : transfers[2] ? transfers[2].value + transfers[1].value  : transfers[1].value
+                    amountInToken: sentTokenAmountInToken,
+                    amountInUSD: transfers[0].value
+
+                    // amountInUSD: transfers[0].fungible_info.symbol === 'USDT' ? transfers[0].quantity.float : transfers[2] ? transfers[2].value + transfers[1].value  : transfers[1].value
                 }
             }
 
