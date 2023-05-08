@@ -18,15 +18,32 @@ const calculateTokensStatistics = async (tokens) => {
 
         }
 
-        // Если закрывал частично позицию.
-        if (token.closedPositions.amountInUSDWithFee > 0) {
+
+        // Если открытой позиции не было, а закрытая была. (такое бывает из-за лимита на объем сфетченных транзакций)
+        if (token.remainingPositions.amountInToken < 0) {
+            token.pnl = 0;
+            token.unrealizedPnl = 0;
+        } else if (token.closedPositions.amountInUSDWithFee > 0) { // Если закрывал частично позицию.
             token.pnl = token.closedPositions.amountInUSDWithFee - token.openedPositions.amountInUSDWithFee;
-            token.unrealizedPnl = token.pnl > 0 ? token.pnl : token.pnl - token.openedPositions.amountInUSDWithFee * (1 - token.closedPositions.amountInToken / token.openedPositions.amountInToken);
+            token.unrealizedPnl = token.pnl + token.remainingPositions.amountInUSDWithFee;
+            // token.unrealizedPnl = token.pnl > 0 ? token.pnl : token.pnl - token.openedPositions.amountInUSDWithFee * (1 - token.closedPositions.amountInToken / token.openedPositions.amountInToken);
         } else {
             token.pnl = token.remainingPositions.amountInUSDWithFee > 0 ? token.remainingPositions.amountInUSDWithFee - token.openedPositions.amountInUSDWithFee : -token.openedPositions.amountInUSDWithFee;
             token.unrealizedPnl = token.pnl + token.remainingPositions.amountInUSDWithFee;
         }
 
+
+        // if (token.openedPositions.amountInToken == 0 || token.remainingPositions.amountInToken + 1 < 0) {
+        //     token.pnl = 0;
+        //     token.unrealizedPnl = 0;
+        // } else if (token.closedPositions.amountInUSDWithFee > 0) { // Если закрывал частично позицию.
+        //     token.pnl = token.closedPositions.amountInUSDWithFee - token.openedPositions.amountInUSDWithFee;
+        //     token.unrealizedPnl = token.pnl + token.remainingPositions.amountInUSDWithFee;
+        //     // token.unrealizedPnl = token.pnl > 0 ? token.pnl : token.pnl - token.openedPositions.amountInUSDWithFee * (1 - token.closedPositions.amountInToken / token.openedPositions.amountInToken);
+        // } else {
+        //     token.pnl = 0;
+        //     token.unrealizedPnl = token.remainingPositions.amountInUSDWithFee - token.openedPositions.amountInUSDWithFee;
+        // }
 
         token.wins = token.pnl > 0 ? 1 : 0,
         token.losses = token.pnl < 0 ? 1 : 0,

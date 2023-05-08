@@ -27,7 +27,7 @@ const calculateWalletStatistics = async (data) => {
   const detailedTokensStatistics = getDetailedTokensStatistics(data);
   const tokensStatistics = await calculateTokensStatistics(detailedTokensStatistics);
 
-
+  // console.log(detailedTokensStatistics, 'detailedTokensStatistics')
   const walletStatistics = tokensStatistics.reduce((acc, curr) => {
     return {
       ...acc,
@@ -60,7 +60,7 @@ const calculateWalletStatistics = async (data) => {
       amount: `${walletStatistics.wins} / ${(walletStatistics.wins + walletStatistics.losses)}`,
       percent: walletStatistics.wins / (walletStatistics.wins + walletStatistics.losses) * 100
     },
-    details: tokensStatistics
+    // details: tokensStatistics
   }
 
 }

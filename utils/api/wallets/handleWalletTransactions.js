@@ -1,6 +1,6 @@
 const excludedTokens = ['ETH', 'USDC', 'USDT', 'BNB']
 
-const handleWalletTransactions = ( { data: { data } }) => {
+const handleWalletTransactions = ({ data }) => {
     return data.reduce(( acc, curr ) => {
         const { attributes } = curr;
         const { mined_at, operation_type, status, fee, transfers } = attributes;
@@ -23,13 +23,16 @@ const handleWalletTransactions = ( { data: { data } }) => {
                     tokenSymbol: transfers[0].fungible_info.symbol,
                     tokenPriceThatTime: transfers[0].price,
                     amountInToken: transfers[0].quantity.float,
+                    // amountInUSD: transfers[2] ? transfers[2].value : transfers[1].value
                     amountInUSD: transfers[1].fungible_info.symbol === 'USDT' ? transfers[2] ? transfers[2].quantity.float + transfers[1].quantity.float : transfers[1].quantity.float : transfers[0].value
                 },
 
                 sentToken: {
                     tokenSymbol: transfers[1].fungible_info.symbol,
                     tokenPriceThatTime: transfers[1].price,
+                    // amountInToken: transfers[2] ? transfers[1].quantity.float : transfers[1].quantity.float,
                     amountInToken: transfers[2] ? transfers[2].quantity.float + transfers[1].quantity.float : transfers[1].quantity.float,
+                    // amountInUSD: transfers[0].value
                     amountInUSD: transfers[0].fungible_info.symbol === 'USDT' ? transfers[0].quantity.float : transfers[2] ? transfers[2].value + transfers[1].value  : transfers[1].value
                 }
             }

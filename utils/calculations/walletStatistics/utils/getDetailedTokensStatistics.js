@@ -61,7 +61,7 @@ const getDetailedTokensStatistics = (data) => {
             const { tokenHash, receivedToken, sentToken, fee } = curr;
             const { openedPositions, closedPositions, remainingPositions } = acc;
             
-            if (receivedToken.tokenSymbol === 'SOV' || sentToken.tokenSymbol === 'SOV') console.log(curr, 'curr')
+            // if (receivedToken.tokenSymbol === 'PLEB' || sentToken.tokenSymbol === 'PLEB') console.log(curr, 'curr')
 
             if (receivedToken.tokenSymbol === token) {
                 const amountInUSD = receivedToken.amountInUSD ? receivedToken.amountInUSD : sentToken.amountInUSD;
