@@ -13,7 +13,7 @@ const getWalletTransactions = (searchingWallet, pageSize = 100, customUrl) => {
         .then(async response => {
 
 
-            if (response.data.links.next && page < 64) { // Фетчинг данных со следующий страницы, пока не столкнемся с лимитом в 64 страницы
+            if (response.data.links.next && responseResult.page < 64) { // Фетчинг данных со следующий страницы, пока не столкнемся с лимитом в 64 страницы
                 console.log(`... fetching additional data from page: ${responseResult.page + 1} ...`)
 
                 responseResult.data.push(...response.data.data)
