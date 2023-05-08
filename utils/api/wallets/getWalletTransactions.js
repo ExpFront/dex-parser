@@ -1,7 +1,6 @@
 const axios = require('axios').default;
 const axiosConfig = require('./../../../config/axiosConfig')
 
-let page = 1;
 const responseResult = {
     page: 1,
     data: []

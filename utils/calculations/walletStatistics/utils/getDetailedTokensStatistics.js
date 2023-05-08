@@ -18,38 +18,6 @@ const initialDetailedTokenStatistics = {
 }
 
 
-
-// {
-//     openedPositions: {
-//       amountInToken: 1973158.5372768645,
-//       amountInUSD: 9890.334624366164,
-//       amountInUSDWithFee: 9904.178196022236,
-//       count: 2
-//     },
-
-//     closedPositions: {
-//       amountInToken: 1973158.5372768645,
-//       amountInUSD: 10115.885598087822,
-//       amountInUSDWithFee: 10106.58616625881,
-//       count: 1,
-//       countOfPartiallyClosedPositions: 0
-//     },
-//     remainingPositions: {
-//       amountInToken: 0,
-//       tokenHash: '0x5de8ab7e27f6e7a1fff3e5b337584aa43961beef',
-//       amountInUSDWithFee: 0
-//     },
-//     token: 'SDEX',
-//     pnl: 202.40797023657433,
-//     unrealizedPnl: 202.40797023657433,
-//     wins: 1,
-//     losses: 0,
-//     unrealizedWins: 1,
-//     unrealizedLosses: 0
-//   },
-
-
-
 // Скрипт проходится по всем уникальным токенам и собирает детальную статистику сделок
 
 const getDetailedTokensStatistics = (data) => {
