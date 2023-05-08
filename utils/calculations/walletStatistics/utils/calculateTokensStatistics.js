@@ -8,9 +8,9 @@ const calculateTokensStatistics = async (tokens) => {
 
         if (token.remainingPositions.amountInToken > 0) {
 
-            const data = await getTokensPrice(token.remainingPositions.tokenHash);
+            const { data } = await getTokensPrice(token.remainingPositions.tokenHash);
 
-            if (!data.pairs || liquidity.usd < 5000) {  // Если не смогли сфетчить —> пул ликвидности иссяк
+            if (!data.pairs || data.pairs[0].liquidity.usd < 5000) {  // Если не смогли сфетчить —> пул ликвидности иссяк
                 token.remainingPositions.amountInUSDWithFee = 0;
             } else {
                 token.remainingPositions.amountInUSDWithFee = data.pairs[0].priceUsd * token.remainingPositions.amountInToken - 12;

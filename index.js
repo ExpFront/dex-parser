@@ -19,7 +19,7 @@ const server = http.createServer((req, res) => {
 server.listen(3002, 'localhost', async () => {
   console.log(`Server running at http://localhost:3002/`);
 
-  const searchingWallet = '0xaf2358e98683265cbd3a48509123d390ddf54534';
+  const searchingWallet = '0xf731bd55dba8679a9585fa5719f4219762a87347';
 
   // try {
     const walletTransactions = await getWalletTransactions(searchingWallet);
