@@ -7,8 +7,8 @@ const responseResult = {
     data: []
     };
 
-const getWalletTransactions = (searchingWallet, customUrl) => {
-    const initialUrl = `https://api.zerion.io/v1/wallets/${searchingWallet}/transactions/?currency=usd&page[size]=1&filter[asset_types]=fungible&filter[chain_ids]=ethereum`;
+const getWalletTransactions = (searchingWallet, pageSize = 100, customUrl) => {
+    const initialUrl = `https://api.zerion.io/v1/wallets/${searchingWallet}/transactions/?currency=usd&page[size]=${pageSize}&filter[asset_types]=fungible&filter[chain_ids]=ethereum`;
 
     return axios.get(customUrl || initialUrl, axiosConfig)
         .then(async response => {
@@ -18,9 +18,9 @@ const getWalletTransactions = (searchingWallet, customUrl) => {
                 console.log(`... fetching additional data from page: ${responseResult.page + 1} ...`)
 
                 responseResult.data.push(...response.data.data)
-                responseResult.page = responseResult.page + 1;
+                responseResult.page++;
 
-                return await getWalletTransactions(searchingWallet, response.data.links.next)
+                return await getWalletTransactions(searchingWallet, pageSize, response.data.links.next)
 
             } else {
                 console.log(`All data was fetched. Count of all pages is: ${responseResult.page}`)
