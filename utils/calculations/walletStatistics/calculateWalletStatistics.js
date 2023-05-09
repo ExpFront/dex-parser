@@ -58,6 +58,7 @@ const calculateWalletStatistics = async (data) => {
 
 
   return {
+    // ...tokensStatistics,
     details: tokensStatistics,
 
     ...walletStatistics,
