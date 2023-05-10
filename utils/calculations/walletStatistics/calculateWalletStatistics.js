@@ -25,7 +25,7 @@ const initialWalletStatistics = {
 
 const calculateWalletStatistics = async (data) => {
 
-  const detailedTokensStatistics = getDetailedTokensStatistics(data);
+  const detailedTokensStatistics = await getDetailedTokensStatistics(data);
   const tokensStatistics = await calculateTokensStatistics(detailedTokensStatistics);
 
   const walletStatistics = tokensStatistics.reduce((acc, curr) => {
@@ -58,7 +58,6 @@ const calculateWalletStatistics = async (data) => {
 
 
   return {
-    // ...tokensStatistics,
     details: tokensStatistics,
 
     ...walletStatistics,

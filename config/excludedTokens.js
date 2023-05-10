@@ -1,4 +1,4 @@
-const excludedTokens = ['ETH', 'USDC', 'USDT', 'BNB']
+const excludedTokens = ['ETH', 'WETH', 'USDC', 'USDT', 'BNB']
 
 
 module.exports = excludedTokens;

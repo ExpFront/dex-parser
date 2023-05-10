@@ -5,17 +5,21 @@ const handleWalletTransactions = ({ data }) => {
         const { attributes } = curr;
         const { mined_at, operation_type, status, fee, transfers } = attributes;
 
-        if (operation_type === "trade" && status === 'confirmed') {
+        if (operation_type === "trade" && status === 'confirmed' && !(!excludedTokens.includes(transfers[0].fungible_info.symbol) && !excludedTokens.includes(transfers[transfers.length - 1].fungible_info.symbol))) {
             const tokenName = excludedTokens.includes(transfers[0].fungible_info.symbol) ? transfers[1].fungible_info.symbol : transfers[0].fungible_info.symbol;
 
-            const { sentTokenAmountInToken, receivedTokenAmountInToken } = transfers.reduce((acc, curr, id) => {
+            const { sentTokenAmountInToken, receivedTokenAmountInToken, sentTokenAmountInUSD, receivedTokenAmountInUSD } = transfers.reduce((acc, curr, id) => {
                 return {
                     sentTokenAmountInToken: id === 0 ? acc.sentTokenAmountInToken : acc.sentTokenAmountInToken + curr.quantity.float,
-                    receivedTokenAmountInToken: id === transfers.length - 1 ? acc.receivedTokenAmountInToken : acc.receivedTokenAmountInToken + curr.quantity.float
+                    receivedTokenAmountInToken: id === transfers.length - 1 ? acc.receivedTokenAmountInToken : acc.receivedTokenAmountInToken + curr.quantity.float,
+                    sentTokenAmountInUSD: id === 0 ? acc.sentTokenAmountInUSD : acc.sentTokenAmountInUSD + curr.value,
+                    receivedTokenAmountInUSD: id === transfers.length - 1 ? acc.receivedTokenAmountInUSD : acc.receivedTokenAmountInUSD + curr.value
                 }
             }, {
                 sentTokenAmountInToken: 0,
-                receivedTokenAmountInToken: 0
+                receivedTokenAmountInToken: 0,
+                sentTokenAmountInUSD: 0,
+                receivedTokenAmountInUSD: 0
             });
 
 
@@ -35,20 +39,132 @@ const handleWalletTransactions = ({ data }) => {
                     tokenPriceThatTime: transfers[0].price,
                     // amountInToken: transfers[0].quantity.float,
                     amountInToken: receivedTokenAmountInToken,
-                    amountInUSD: transfers.length > 2 ? transfers[transfers.length - 1].value : transfers[1].value // не уверен что так
+                    amountInUSD: (transfers[transfers.length - 1].value ? transfers[transfers.length - 1].value : receivedTokenAmountInUSD) // не уверен что так
                 },
 
                 sentToken: {
                     tokenSymbol: transfers[1].fungible_info.symbol,
                     tokenPriceThatTime: transfers[1].price,
                     amountInToken: sentTokenAmountInToken,
-                    amountInUSD: transfers[0].value
+                    amountInUSD: transfers[0].value ? transfers[0].value : sentTokenAmountInUSD
 
                     // amountInUSD: transfers[0].fungible_info.symbol === 'USDT' ? transfers[0].quantity.float : transfers[2] ? transfers[2].value + transfers[1].value  : transfers[1].value
                 }
             }
 
             acc[tokenName] = Array.isArray(acc[tokenName]) ? [ ...acc[tokenName], newData ]: [ newData ];
+        }
+
+        //учёт отправленных токенов
+        if (operation_type === "send" && status === 'confirmed') {
+            if (!excludedTokens.includes(transfers[0].fungible_info.symbol)) {
+                const tokenName = transfers[0].fungible_info.symbol
+
+                const newData = {
+                    transactionTime: mined_at,
+                    tokenHash: transfers[0].fungible_info.implementations[0].address,
+
+                    fee: {
+                        tokenSymbol: fee.fungible_info.symbol,
+                        tokenPriceThatTime: fee.price,
+                        amountInToken: fee.quantity.float,
+                        amountInUSD: fee.value
+                    },
+
+                    receivedToken: {
+                        tokenSymbol: 0,
+                        tokenPriceThatTime: 0,
+                        amountInToken: 0,
+                        amountInUSD: 0 
+                    },
+
+                    sentToken: {
+
+                        tokenSymbol: transfers[0].fungible_info.symbol,
+                        tokenPriceThatTime: transfers[0].price,
+                        amountInToken: transfers[0].quantity.float,
+                        amountInUSD: transfers[0].value
+                    }
+                }
+
+                acc[tokenName] = Array.isArray(acc[tokenName]) ? [ ...acc[tokenName], newData ]: [ newData ];
+            } 
+        }
+
+        //учёт транзакций с токенами с двух сторон
+        if (operation_type === "trade" && status === 'confirmed' && !excludedTokens.includes(transfers[0].fungible_info.symbol) && !excludedTokens.includes(transfers[transfers.length - 1].fungible_info.symbol)) {
+            const tokenNameFirst = transfers[0].fungible_info.symbol;
+            const tokenNameSecond = transfers[transfers.length - 1].fungible_info.symbol;
+            const { sentTokenAmountInToken, receivedTokenAmountInToken, sentTokenAmountInUSD, receivedTokenAmountInUSD } = transfers.reduce((acc, curr, id) => {
+                return {
+                    sentTokenAmountInToken: id === 0 ? acc.sentTokenAmountInToken : acc.sentTokenAmountInToken + curr.quantity.float,
+                    receivedTokenAmountInToken: id === transfers.length - 1 ? acc.receivedTokenAmountInToken : acc.receivedTokenAmountInToken + curr.quantity.float,
+                    sentTokenAmountInUSD: id === 0 ? acc.sentTokenAmountInUSD : acc.sentTokenAmountInUSD + curr.value,
+                    receivedTokenAmountInUSD: id === transfers.length - 1 ? acc.receivedTokenAmountInUSD : acc.receivedTokenAmountInUSD + curr.value
+                }
+            }, {
+                sentTokenAmountInToken: 0,
+                receivedTokenAmountInToken: 0,
+                sentTokenAmountInUSD: 0,
+                receivedTokenAmountInUSD: 0
+            });
+
+            const newDataForFirstToken = {
+                transactionTime: mined_at,
+                tokenHash: transfers[0].fungible_info.implementations[0].address,
+
+                fee: {
+                    tokenSymbol: fee.fungible_info.symbol,
+                    tokenPriceThatTime: fee.price,
+                    amountInToken: fee.quantity.float,
+                    amountInUSD: fee.value
+                },
+
+                receivedToken: {
+                    tokenSymbol: transfers[0].fungible_info.symbol,
+                    tokenPriceThatTime: transfers[0].price,
+                    amountInToken: receivedTokenAmountInToken,
+                    amountInUSD: (transfers[transfers.length - 1].value ? transfers[transfers.length - 1].value : receivedTokenAmountInUSD) // не уверен что так
+                },
+
+                sentToken: {
+                    tokenSymbol: transfers[1].fungible_info.symbol,
+                    tokenPriceThatTime: transfers[1].price,
+                    amountInToken: sentTokenAmountInToken,
+                    amountInUSD: transfers[0].value ? transfers[0].value : sentTokenAmountInUSD
+
+                }
+            }
+
+            const newDataForSecondToken = {
+                transactionTime: mined_at,
+                tokenHash: transfers[transfers.length - 1].fungible_info.implementations[0].address,
+
+                fee: {
+                    tokenSymbol: fee.fungible_info.symbol,
+                    tokenPriceThatTime: fee.price,
+                    amountInToken: fee.quantity.float,
+                    amountInUSD: fee.value
+                },
+
+                receivedToken: {
+                    tokenSymbol: 0,
+                    tokenPriceThatTime: 0,
+                    amountInToken: 0,
+                    amountInUSD: 0
+                },
+
+                sentToken: {
+                    tokenSymbol: transfers[1].fungible_info.symbol,
+                    tokenPriceThatTime: transfers[1].price,
+                    amountInToken: sentTokenAmountInToken,
+                    amountInUSD: transfers[0].value ? transfers[0].value : sentTokenAmountInUSD
+
+                }
+            }
+
+            acc[tokenNameFirst] = Array.isArray(acc[tokenNameFirst]) ? [ ...acc[tokenNameFirst], newDataForFirstToken ]: [ newDataForFirstToken ];
+            acc[tokenNameSecond] = Array.isArray(acc[tokenNameSecond]) ? [ ...acc[tokenNameSecond], newDataForSecondToken ]: [ newDataForSecondToken ];
         }
 
         return acc;
