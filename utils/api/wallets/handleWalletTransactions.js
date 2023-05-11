@@ -91,6 +91,53 @@ const handleWalletTransactions = ({ data }) => {
             } 
         }
 
+
+        if (operation_type === "receive" && status === 'confirmed') {
+            if (!excludedTokens.includes(transfers[0].fungible_info.symbol)) {
+                const tokenName = transfers[0].fungible_info.symbol
+
+                const { sentTokenAmountInToken, receivedTokenAmountInToken, sentTokenAmountInUSD, receivedTokenAmountInUSD } = transfers.reduce((acc, curr, id) => {
+                    return {
+                        receivedTokenAmountInToken: acc.receivedTokenAmountInToken + curr.quantity.float,
+                        receivedTokenAmountInUSD: acc.receivedTokenAmountInUSD + curr.value
+                    }
+                }, {
+                    receivedTokenAmountInToken: 0,
+                    receivedTokenAmountInUSD: 0
+                });
+
+                const newData = {
+                    transactionTime: mined_at,
+                    tokenHash: transfers[0].fungible_info.implementations[0].address,
+
+                    fee: {
+                        tokenSymbol: fee.fungible_info.symbol,
+                        tokenPriceThatTime: fee.price,
+                        amountInToken: fee.quantity.float,
+                        amountInUSD: fee.value
+                    },
+
+                    receivedToken: {
+                        tokenSymbol: transfers[0].fungible_info.symbol,
+                        tokenPriceThatTime: transfers[0].price,
+                        amountInToken: receivedTokenAmountInToken,
+                        amountInUSD: receivedTokenAmountInUSD
+                    },
+
+                    sentToken: {
+
+                        tokenSymbol: '',
+                        tokenPriceThatTime: 0,
+                        amountInToken: 0,
+                        amountInUSD: 0
+                    }
+                }
+
+                acc[tokenName] = Array.isArray(acc[tokenName]) ? [ ...acc[tokenName], newData ]: [ newData ];
+            } 
+        }
+
+
         //учёт транзакций с токенами с двух сторон
         if (operation_type === "trade" && status === 'confirmed' && !excludedTokens.includes(transfers[0].fungible_info.symbol) && !excludedTokens.includes(transfers[transfers.length - 1].fungible_info.symbol)) {
             const tokenNameFirst = transfers[0].fungible_info.symbol;
@@ -128,10 +175,10 @@ const handleWalletTransactions = ({ data }) => {
                 },
 
                 sentToken: {
-                    tokenSymbol: transfers[1].fungible_info.symbol,
-                    tokenPriceThatTime: transfers[1].price,
-                    amountInToken: sentTokenAmountInToken,
-                    amountInUSD: transfers[0].value ? transfers[0].value : sentTokenAmountInUSD
+                    tokenSymbol: '',
+                    tokenPriceThatTime: 0,
+                    amountInToken: 0,
+                    amountInUSD: 0
 
                 }
             }
@@ -148,7 +195,7 @@ const handleWalletTransactions = ({ data }) => {
                 },
 
                 receivedToken: {
-                    tokenSymbol: 0,
+                    tokenSymbol: '',
                     tokenPriceThatTime: 0,
                     amountInToken: 0,
                     amountInUSD: 0

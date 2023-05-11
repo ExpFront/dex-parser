@@ -24,7 +24,6 @@ const getWalletTransactions = (searchingWallet, pageSize = 100, customUrl, respo
                 return responseResult;
             }
             
-
         })
         .catch(err => console.error(err, 'error'));
 }

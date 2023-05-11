@@ -36,7 +36,6 @@ const getDetailedTokensStatistics = (data) => {
 
                 return {
                     ...acc,
-
                     token,
 
                     openedPositions: {
@@ -74,6 +73,8 @@ const getDetailedTokensStatistics = (data) => {
                 };
 
             }
+
+            return acc;
 
         }, initialDetailedTokenStatistics)
     })
