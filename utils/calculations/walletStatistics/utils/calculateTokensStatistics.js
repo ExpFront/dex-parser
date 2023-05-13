@@ -1,45 +1,18 @@
-const getTokensPrice = require('../../../api/token/getTokensPrice');
 
 const calculateTokensStatistics = async (tokens) => {
 
-    return Promise.all(tokens.map(async token => {
-
-        token.remainingPositions.amountInUSDWithFee = 0;
-
-        if (token.remainingPositions.amountInToken > 0) {
-
-            const { data } = await getTokensPrice(token.remainingPositions.tokenHash);
-
-            if (!data.pairs || data.pairs[0].liquidity.usd < 5000) {  // Если не смогли сфетчить —> пул ликвидности иссяк
-                token.remainingPositions.amountInUSDWithFee = 0;
-            } else {
-                token.remainingPositions.amountInUSDWithFee = data.pairs[0].priceUsd * token.remainingPositions.amountInToken - 12;
-            }
-
-        }
-
+    return await Promise.all(tokens.map(async token => {
 
         // Если открытой позиции не было, а закрытая была. (такое бывает из-за лимита на объем сфетченных транзакций)
 
-        if (token.openedPositions.amountInToken == 0 || token.remainingPositions.amountInToken + 0.05 * token.openedPositions.amountIntoken < 0) {
-            token.pnl = 0;
-            token.unrealizedPnl = 0;
-
-        } else if (token.closedPositions.amountInUSDWithFee > 0) { // Если закрывал частично позицию.
+        if (token.closedPositions.amountInUSDWithFee > 0) { // Если закрывал частично позицию.
             token.pnl = token.closedPositions.amountInUSDWithFee - token.openedPositions.amountInUSDWithFee;
-            token.unrealizedPnl = token.pnl + token.remainingPositions.amountInUSDWithFee;
-
         } else {
-            token.pnl = 0;
-            token.unrealizedPnl = token.remainingPositions.amountInUSDWithFee - token.openedPositions.amountInUSDWithFee;
+            token.pnl = -token.openedPositions.amountInUSDWithFee;
         }
 
-
-        token.wins = token.pnl > 0 ? 1 : 0,
-        token.losses = token.pnl < 0 ? 1 : 0,
-
-        token.unrealizedWins = token.unrealizedPnl > 0 ? 1 : 0, 
-        token.unrealizedLosses = token.unrealizedPnl < 0 ? 1 : 0
+        token.wins = token.pnl > 0 ? 1 : 0;
+        token.losses = token.pnl < 0 ? 1 : 0;
 
         return token;
 

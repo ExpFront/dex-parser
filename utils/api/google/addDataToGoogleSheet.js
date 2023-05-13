@@ -19,7 +19,7 @@ const authSheets = async () => {
 
 
   
-const addDataToGoogleSheet = async ( walletID, { pnl, winrate: { amount, percent }, unrealizedWinrate, openedPositions, closedPositions, remainingPositions, unrealizedPnl }  ) => {
+const addDataToGoogleSheet = async ( walletID, { pnl, winrate: { amount, percent }, openedPositions, closedPositions, onlyRemainingPnl }  ) => {
     const { sheets } = await authSheets();
     const valuesToAdd = [
         `https://app.zerion.io/${walletID}`, // link to wallet
@@ -29,10 +29,7 @@ const addDataToGoogleSheet = async ( walletID, { pnl, winrate: { amount, percent
         percent,
         openedPositions.count,
         closedPositions.count,
-        remainingPositions.count,
-        unrealizedPnl,
-        unrealizedWinrate.amount,
-        unrealizedWinrate.percent
+        // onlyRemainingPnl
     ];
 
 

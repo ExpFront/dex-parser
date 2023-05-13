@@ -7,4 +7,3 @@ const getTokensPrice = async (searchingTokens = '0x76c73e630b61551067ab78c6f5909
 
 module.exports = getTokensPrice;
 
-

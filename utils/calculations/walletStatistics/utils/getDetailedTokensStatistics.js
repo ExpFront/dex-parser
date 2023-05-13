@@ -12,9 +12,6 @@ const initialDetailedTokenStatistics = {
       count: 0,
       countOfPartiallyClosedPositions: 0
     },
-    remainingPositions: {
-      amountInToken: 0,
-    }
 }
 
 
@@ -44,12 +41,6 @@ const getDetailedTokensStatistics = (data) => {
                         amountInUSDWithFee: openedPositions.amountInUSDWithFee + amountInUSD + fee.amountInUSD,
                         count: openedPositions.count + 1 
                     },
-
-                    remainingPositions: {
-                        ...remainingPositions,
-                        tokenHash,
-                        amountInToken: remainingPositions.amountInToken + receivedToken.amountInToken,
-                    }
                 }
 
             } else if (sentToken.tokenSymbol === token) {
@@ -62,14 +53,9 @@ const getDetailedTokensStatistics = (data) => {
                         amountInToken: closedPositions.amountInToken + sentToken.amountInToken,
                         amountInUSD: closedPositions.amountInUSD + sentToken.amountInUSD,
                         amountInUSDWithFee: closedPositions.amountInUSDWithFee + sentToken.amountInUSD - fee.amountInUSD,
-                        count: remainingPositions.amountInToken - sentToken.amountInToken === 0 ? closedPositions.count + 1 : closedPositions.count,
-                        countOfPartiallyClosedPositions: remainingPositions.amountInToken - sentToken.amountInToken === 0 ? closedPositions.countOfPartiallyClosedPositions : closedPositions.countOfPartiallyClosedPositions + 1,
+                        count: openedPositions.amountInToken - closedPositions.amountInToken - sentToken.amountInToken === 0 ? closedPositions.count + 1 : closedPositions.count,
+                        countOfPartiallyClosedPositions: openedPositions.amountInToken - closedPositions.amountInToken - sentToken.amountInToken === 0 ? closedPositions.countOfPartiallyClosedPositions : closedPositions.countOfPartiallyClosedPositions + 1,
                     },
-
-                    remainingPositions: {
-                        ...remainingPositions,
-                        amountInToken: remainingPositions.amountInToken - sentToken.amountInToken,
-                    }
                 };
 
             }

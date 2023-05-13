@@ -60,6 +60,8 @@ const handleWalletTransactions = ({ data }) => {
             if (!excludedTokens.includes(transfers[0].fungible_info.symbol)) {
                 const tokenName = transfers[0].fungible_info.symbol
 
+                // console.log(transfers[0].fungible_info.implementations[0].address, '3')
+
                 const newData = {
                     transactionTime: mined_at,
                     tokenHash: transfers[0].fungible_info.implementations[0].address,
@@ -92,7 +94,7 @@ const handleWalletTransactions = ({ data }) => {
         }
 
 
-        if (operation_type === "receive" && status === 'confirmed') {
+        if (operation_type === "receive" && status === 'confirmed' && transfers[0].hasOwnProperty('fungible_info')) {
             if (!excludedTokens.includes(transfers[0].fungible_info.symbol)) {
                 const tokenName = transfers[0].fungible_info.symbol
 
@@ -106,6 +108,7 @@ const handleWalletTransactions = ({ data }) => {
                     receivedTokenAmountInUSD: 0
                 });
 
+                // console.log(transfers[0].fungible_info.implementations[0].address, 'transfers[0].fungible_info.implementations[0].address')
                 const newData = {
                     transactionTime: mined_at,
                     tokenHash: transfers[0].fungible_info.implementations[0].address,
@@ -155,6 +158,9 @@ const handleWalletTransactions = ({ data }) => {
                 sentTokenAmountInUSD: 0,
                 receivedTokenAmountInUSD: 0
             });
+
+
+            // console.log(transfers[0].fungible_info.implementations[0].address, '2')
 
             const newDataForFirstToken = {
                 transactionTime: mined_at,

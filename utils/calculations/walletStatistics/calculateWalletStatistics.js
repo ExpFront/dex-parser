@@ -2,6 +2,9 @@ const getDetailedTokensStatistics = require('./utils/getDetailedTokensStatistics
 const calculateTokensStatistics = require('./utils/calculateTokensStatistics');
 const excludedTokens = require('./../../../config/excludedTokens')
 
+const axios = require('axios').default;
+const axiosConfig = require('./../../../config/axiosConfig')
+
 const initialWalletStatistics = {
   openedPositions: {
     count: 0,
@@ -9,24 +12,31 @@ const initialWalletStatistics = {
   closedPositions: {
     count: 0,
   },
-  remainingPositions: {
-    count: 0,
-  },
   pnl: 0,
-  unrealizedPnl: 0,
   wins: 0,
   losses: 0,
-  unrealizedWins: 0,
-  unrealizedLosses: 0
 }
 
 
 // Скрипт подсчитывает общую статистику по кошельку
 
-const calculateWalletStatistics = async (data) => {
+const calculateWalletStatistics = async (data, searchingWallet) => {
 
   const detailedTokensStatistics = await getDetailedTokensStatistics(data);
   const tokensStatistics = await calculateTokensStatistics(detailedTokensStatistics);
+
+
+  const remainingPositionsPnlWithFee = await axios.get(`https://api.zerion.io/v1/wallets/${searchingWallet}/positions/?currency=usd`, axiosConfig)
+    .then(({ data: { data }}) => data.reduce((acc, { attributes }) => {
+
+      if (excludedTokens.includes(attributes.fungible_info.symbol)) return acc;
+
+      console.log(attributes.value, 'attributes.value')
+      return acc += attributes.value - 12 > 0 ? attributes.value - 12 : 0;
+    }, 0));
+
+
+
 
   const walletStatistics = tokensStatistics.reduce((acc, curr) => {
 
@@ -43,35 +53,26 @@ const calculateWalletStatistics = async (data) => {
         count: acc.closedPositions.count + curr.closedPositions.count
       },
 
-      remainingPositions: {
-        count: curr.remainingPositions.amountInToken > 0 ? acc.remainingPositions.count + 1 : acc.remainingPositions.count
-      },
-
       pnl: acc.pnl + curr.pnl,
-      unrealizedPnl: acc.unrealizedPnl + curr.unrealizedPnl,
       wins: acc.wins + curr.wins,
       losses: acc.losses + curr.losses,
-      unrealizedWins: acc.unrealizedWins + curr.unrealizedWins,
-      unrealizedLosses: acc.unrealizedLosses + curr.unrealizedLosses,
     }
   }, initialWalletStatistics)
 
+  
 
   return {
     details: tokensStatistics,
 
     ...walletStatistics,
 
+    pnl: walletStatistics.pnl + remainingPositionsPnlWithFee,
+    // onlyRemainingPnl: remainingPositionsPnlWithFee,
+
     winrate: {
       amount: `${walletStatistics.wins} / ${(walletStatistics.wins + walletStatistics.losses)}`,
       percent: walletStatistics.wins / (walletStatistics.wins + walletStatistics.losses) * 100
-    },
-
-    unrealizedWinrate: {
-      amount: `${walletStatistics.unrealizedWins} / ${(walletStatistics.unrealizedWins + walletStatistics.unrealizedLosses)}`,
-      percent: walletStatistics.unrealizedWins / (walletStatistics.unrealizedWins + walletStatistics.unrealizedLosses) * 100
-    },
-
+    }
   }
 
 }
