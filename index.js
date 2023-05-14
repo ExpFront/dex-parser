@@ -18,7 +18,7 @@ const server = http.createServer((req, res) => {
 server.listen(3002, 'localhost', async () => {
   console.log(`Server running at http://localhost:3002/`);
 
-  const searchingWallets = ['0xc17e03c77dbe8e19fd12bcf9bdce024105702cbb'];
+  const searchingWallets = process.env.WALLET ? [`${process.env.WALLET}`] : ['0xf731bd55dba8679a9585fa5719f4219762a87347']
 
   try {
 
